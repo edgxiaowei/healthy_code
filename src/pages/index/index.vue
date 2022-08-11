@@ -1,9 +1,13 @@
 <template>
 	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
 		<view>
-			<text class="title">{{title}}</text>
+			<button @click="getScenes">添加场景截图</button>
 		</view>
+		<view class="z"></view>
+		<view>
+			<button @click="getNucleiAcid">添加核酸截图</button>
+		</view>
+		
 	</view>
 </template>
 
@@ -11,39 +15,138 @@
 	export default {
 		data() {
 			return {
-				title: 'Hello'
+				hasScenes: false,
+				hasNucleiAcid: false,
 			}
 		},
-		onLoad() {
-
-		},
 		methods: {
-
+			getScenes() {
+				var _this = this;
+				uni.chooseImage({
+					count: 1,
+					sizeType: ["original"],
+					sourceType: ["album"],
+					success: function(res) {
+						_this.hasScenes = true;
+						
+						if (res && res.tempFilePaths && res.tempFilePaths.length === 1 && res.tempFilePaths[0]) {
+							uni.getImageInfo({
+								src: res.tempFilePaths[0],
+								success: function(imageInfo) {
+									uni.setStorage({
+										key: "scenes",
+										data: JSON.stringify({p: res.tempFilePaths[0], w: imageInfo.width, h: imageInfo.height}),
+										success: function() {
+											uni.showToast({
+												icon: "success",
+												title: "成功"
+											})
+											_this.selectDone();
+										},
+										fail: function() {
+											_this.hasScenes = false;
+											console.log("saveScenes error", err);
+											uni.showToast({
+												icon: "error",
+												title: "保存失败"
+											})
+										}
+									})
+								},
+								fail: function() {
+									uni.showToast({
+										icon: "error",
+										title: "读取信息失败"
+									})
+								}
+							})
+						}
+					},
+					fail: function(err) {
+						_this.hasScenes = false;
+						console.log("getScenes error", err);
+						uni.showToast({
+							icon: "error",
+							title: "失败"
+						})
+					}
+				})
+			},
+			getNucleiAcid() {
+				var _this = this;
+				uni.chooseImage({
+					count: 1,
+					sizeType: ["original"],
+					sourceType: ["album"],
+					success: function(res) {
+						_this.hasNucleiAcid = true;
+						if (res && res.tempFilePaths && res.tempFilePaths.length === 1 && res.tempFilePaths[0]) {
+							uni.getImageInfo({
+								src: res.tempFilePaths[0],
+								success: function(imageInfo) {
+									uni.setStorage({
+										key: "nucleiAcid",
+										data: JSON.stringify({p: res.tempFilePaths[0], w: imageInfo.width, h: imageInfo.height}),
+										success: function() {
+											uni.showToast({
+												icon: "success",
+												title: "成功"
+											})
+											_this.selectDone();
+										},
+										fail: function() {
+											_this.hasScenes = false;
+											console.log("saveNucleiAcid error", err);
+											uni.showToast({
+												icon: "error",
+												title: "保存失败"
+											})
+										}
+									})
+								},
+								fail: function() {
+									uni.showToast({
+										icon: "error",
+										title: "读取信息失败"
+									})
+								}
+							})
+						}
+					},
+					fail: function(err) {
+						_this.hasNucleiAcid = false;
+						console.log("getNucleiAcid error", err);
+						uni.showToast({
+							icon: "error",
+							title: "失败"
+						})
+					}
+				})
+			},
+			selectDone() {
+				if (this.hasScenes && this.hasNucleiAcid) {
+					this.hasScenes = false;
+					this.hasNucleiAcid = false;
+					uni.navigateTo({
+						url: "../merge/merge"
+					})
+				}
+			},
 		}
 	}
 </script>
 
 <style>
+	page {
+		height: 100%;
+	}
 	.content {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
 		justify-content: center;
+		height: 100%
 	}
-
-	.logo {
-		height: 200rpx;
-		width: 200rpx;
-		margin: 200rpx auto 50rpx auto;
-	}
-
-	.text-area {
-		display: flex;
-		justify-content: center;
-	}
-
-	.title {
-		font-size: 36rpx;
-		color: #8f8f94;
+	.z {
+		height: 3%
 	}
 </style>
